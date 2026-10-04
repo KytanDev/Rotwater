@@ -17,6 +17,28 @@ public class InventoryManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
         Slots = new InventorySlotData[slotCount];
     }
+    private void DebugInventory()
+    {
+        Debug.Log("----- INVENTORY -----");
+
+        for (int i = 0; i < Slots.Length; i++)
+        {
+            if (Slots[i].item != null)
+            {
+                Debug.Log(
+                    "Slot " + i +
+                    ": " + Slots[i].item.itemName +
+                    " x" + Slots[i].quantity
+                );
+            }
+            else
+            {
+                Debug.Log("Slot " + i + ": EMPTY");
+            }
+        }
+
+        Debug.Log("---------------------");
+    }
 
     public bool AddItem(ItemData item, int quantity = 1)
     {
@@ -30,6 +52,7 @@ public class InventoryManager : MonoBehaviour
                     int toAdd = Mathf.Min(quantity, space);
                     Slots[i].quantity += toAdd;
                     quantity -= toAdd;
+                    DebugInventory();
                     if (quantity <= 0) { OnInventoryChanged?.Invoke(); return true; }
                 }
             }
@@ -42,6 +65,7 @@ public class InventoryManager : MonoBehaviour
                 int toAdd = item.isStackable ? Mathf.Min(quantity, item.maxStackSize) : 1;
                 Slots[i] = new InventorySlotData(item, toAdd);
                 quantity -= toAdd;
+                DebugInventory();
                 if (quantity <= 0) { OnInventoryChanged?.Invoke(); return true; }
 
             }

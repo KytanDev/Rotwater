@@ -16,5 +16,5 @@ MonoBehaviour:
   itemID: 2
   description: Wooden log
   isStackable: 1
-  maxStackSize: 12
+  maxStackSize: 6
   itemType: 2
