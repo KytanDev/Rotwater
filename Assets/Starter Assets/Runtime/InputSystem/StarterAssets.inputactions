@@ -395,6 +395,77 @@
                     "isPartOfComposite": true
                 }
             ]
+        },
+        {
+            "name": "Fishing",
+            "id": "34157f23-7231-49f4-aa0b-30e05d816887",
+            "actions": [
+                {
+                    "name": "Cast",
+                    "type": "Value",
+                    "id": "ac48ba15-a546-460a-8e3c-0d8c92094495",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true,
+                    "priority": 0
+                },
+                {
+                    "name": "Reel",
+                    "type": "Value",
+                    "id": "e5a474c9-c3ea-401d-87bf-5d7f5d9d41cc",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true,
+                    "priority": 0
+                },
+                {
+                    "name": "ExitFishing",
+                    "type": "Button",
+                    "id": "ee52a97d-a85d-4c01-9b82-9ac8c535c311",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "baa66c60-52d9-4920-8030-4ba0259e3a39",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Cast",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "85725771-c582-4cb6-b24c-6418b0838baa",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Reel",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2a540a93-25bd-4167-b4d4-373c77346137",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ExitFishing",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": [
