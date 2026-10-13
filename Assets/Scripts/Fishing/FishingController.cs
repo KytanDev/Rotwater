@@ -10,6 +10,7 @@ public class FishingController : MonoBehaviour
     [SerializeField] private FishingRod fishingRod;
     [SerializeField] private FishingLine fishingLine;
     [SerializeField] private FishBehaviour testFish;
+    [SerializeField] private Transform playerCamera;
 
     [Header("Casting")]
     [SerializeField] private float chargeTime = 1.5f;
@@ -22,6 +23,8 @@ public class FishingController : MonoBehaviour
     [SerializeField] private float fishTensionGain = 12f;
     [SerializeField] private float reelTensionGain = 25f;
     [SerializeField] private float rodTensionGain = 15f;
+    [SerializeField] private float counterTensionGain = 20f;
+    [SerializeField] private float minReelTension = 30f;
 
     private float biteTimer;
     private float hookTimer;
@@ -110,6 +113,11 @@ public class FishingController : MonoBehaviour
         {
             isRodRaised = value.isPressed;
         }
+    }
+
+    public void OnLook(InputValue value)
+    {
+
     }
 
     public void OnExitFishing(InputValue value)
@@ -213,14 +221,21 @@ public class FishingController : MonoBehaviour
 
         if (isReeling)
         {
-            hookedFish.ReelTowardsPlayer();
-
             tensionGain += reelTensionGain;
+
+            if (fishingLine.CurrentTension >= minReelTension) // Add stamina check for exhaustion
+            {
+                hookedFish.ReelTowardsPlayer();
+            }
         }
 
         if (isRodRaised)
         {
-            tensionGain += rodTensionGain;
+            float counterStrength = CalculateCounterStrength();
+
+            tensionGain += rodTensionGain + counterTensionGain;
+
+            Debug.Log($"Counter Strength: {counterStrength:F2}");
         }
 
         fishingRod.FollowFish(hookedFish.transform);
@@ -270,6 +285,21 @@ public class FishingController : MonoBehaviour
         isReeling = false;
         fishingLine.ResetTension();
         ChangeState(FishingState.Fighting);
+    }
+
+    private float CalculateCounterStrength()
+    {
+        if (hookedFish == null) { return 0f; }
+
+        Vector3 cameraDirection = playerCamera.forward;
+        cameraDirection.y = 0f;
+        cameraDirection.Normalize();
+
+        Vector3 oppositeFishDirection = -hookedFish.RunDirection;
+
+        float alignment = Vector3.Dot(cameraDirection, oppositeFishDirection);
+
+        return Mathf.Clamp01(alignment);
     }
 
     private void ChangeState(FishingState newState)

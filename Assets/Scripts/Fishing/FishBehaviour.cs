@@ -17,7 +17,8 @@ public class FishBehaviour : MonoBehaviour
     private bool isHooked;
     private float directionTimer;
     private int swimDirection = 1;
-
+    private Vector3 fightRightDirection;
+    public Vector3 RunDirection => fightRightDirection * swimDirection;
     private Vector3 fightCentre;
     private Transform playerTransform;
 
@@ -33,6 +34,10 @@ public class FishBehaviour : MonoBehaviour
         transform.position = hookPosition;
 
         playerTransform = player;
+
+        fightRightDirection = playerTransform.right;
+        fightRightDirection.y = 0f;
+        fightRightDirection.Normalize();
 
         fightCentre = transform.position;
         directionTimer = 0f;
@@ -52,9 +57,7 @@ public class FishBehaviour : MonoBehaviour
             directionTimer = 0f;
         }
 
-        Vector3 rightDirection = playerTransform.right;
-        rightDirection.y = 0f;
-        rightDirection.Normalize();
+        Vector3 rightDirection = fightRightDirection;
 
         Vector3 movement = rightDirection * swimDirection * swimSpeed * Time.deltaTime;
 

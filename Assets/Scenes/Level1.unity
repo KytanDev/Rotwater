@@ -50325,12 +50325,15 @@ MonoBehaviour:
   fishingRod: {fileID: 1030285328}
   fishingLine: {fileID: 1030285330}
   testFish: {fileID: 427585678}
+  playerCamera: {fileID: 996115517}
   chargeTime: 1.5
   timeUntilBite: 3
   hookWindow: 2.5
   fishTensionGain: 12
   reelTensionGain: 25
   rodTensionGain: 15
+  counterTensionGain: 20
+  minReelTension: 30
   currentState: 0
 --- !u!114 &1481288603 stripped
 MonoBehaviour:
