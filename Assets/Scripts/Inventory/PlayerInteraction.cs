@@ -159,7 +159,7 @@ public class PlayerInteraction : MonoBehaviour
         }
     }
 
-    private void BeginInspection(WorldItem item)
+    public void BeginInspection(WorldItem item)
     {
         inspectedItem = item;
 
@@ -224,6 +224,12 @@ public class PlayerInteraction : MonoBehaviour
         {
             inspectedRigidbody.isKinematic = false;
         }
+
+        // Fish - Delete Object?
+        //if () // Tag? Could work
+        //{
+            // Delete fish Object
+        //}
 
         inspectedItem = null;
         currentItem = null;

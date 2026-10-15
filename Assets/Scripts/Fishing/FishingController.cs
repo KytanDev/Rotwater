@@ -11,6 +11,7 @@ public class FishingController : MonoBehaviour
     [SerializeField] private FishingLine fishingLine;
     [SerializeField] private FishBehaviour testFish;
     [SerializeField] private Transform playerCamera;
+    [SerializeField] private PlayerInteraction playerInteraction;
 
     [Header("Casting")]
     [SerializeField] private float chargeTime = 1.5f;
@@ -27,10 +28,12 @@ public class FishingController : MonoBehaviour
     [SerializeField] private float minReelTension = 30f;
     [SerializeField] private float baseStaminaDrain = 1f;
     [SerializeField] private float counterStaminaDrain = 4f;
+    [SerializeField] private float landingDistance = 3f;
 
     private float biteTimer;
     private float hookTimer;
     private FishBehaviour hookedFish;
+    private WorldItem hookedFishObject;
 
     [Header("State")]
     [SerializeField]
@@ -43,6 +46,7 @@ public class FishingController : MonoBehaviour
     private void Awake()
     {
         playerInput = GetComponent<PlayerInput>();
+        playerInteraction = GetComponent<PlayerInteraction>();
     }
 
     private void Update()
@@ -225,7 +229,7 @@ public class FishingController : MonoBehaviour
         {
             tensionGain += reelTensionGain;
 
-            if (fishingLine.CurrentTension >= minReelTension || hookedFish.isExhausted) // Add stamina check for exhaustion
+            if (fishingLine.CurrentTension >= minReelTension || hookedFish.isExhausted) 
             {
                 hookedFish.ReelTowardsPlayer();
             }
@@ -242,6 +246,11 @@ public class FishingController : MonoBehaviour
             tensionGain += rodTensionGain + counterTensionGain;
 
             Debug.Log($"Counter Strength: {counterStrength:F2}");
+        }
+
+        if (GetFishDistance() <= landingDistance)
+        {
+            LandFish();
         }
 
         fishingRod.FollowFish(hookedFish.transform);
@@ -319,5 +328,33 @@ public class FishingController : MonoBehaviour
     private void TestEnterFishingMode()
     {
         EnterFishingMode();
+    }
+
+    private void LandFish()
+    {
+        if (currentState != FishingState.Fighting) { return; }
+
+        ChangeState(FishingState.Landing);
+
+        isReeling = false;
+        isRodRaised = false;
+
+        hookedFish.StopFight();
+        Debug.Log($"Landed {hookedFish.name}!");
+
+        playerInteraction.BeginInspection(hookedFishObject);
+    }
+
+    private float GetFishDistance()
+    {
+        if (hookedFish == null) { return float.MaxValue; }
+
+        Vector3 playerPosition = transform.position;
+        Vector3 fishPosition = hookedFish.transform.position;
+
+        playerPosition.y = 0f;
+        fishPosition.y = 0f;
+
+        return Vector3.Distance(playerPosition, fishPosition);
     }
 }

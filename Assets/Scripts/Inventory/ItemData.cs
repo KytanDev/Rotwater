@@ -18,4 +18,4 @@ public class ItemData : ScriptableObject
     public ItemType itemType;
 }
 
-public enum ItemType { Consumable, Equipment, Material, Quest, Key}
+public enum ItemType { Consumable, Equipment, Material, Quest, Key, Specimen}
