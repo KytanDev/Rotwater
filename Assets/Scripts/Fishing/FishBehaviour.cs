@@ -5,9 +5,17 @@ public class FishBehaviour : MonoBehaviour
     [Header("Fish Properties")]
     [SerializeField] private float strength = 1f;
     [SerializeField] private float swimSpeed = 2f;
-
+    [SerializeField] private float startingStamina = 100f;
+    [SerializeField] private float currentStamina;
     public float Strength => strength;
     public float SwimSpeed => swimSpeed;
+
+    private float baseStrength;
+    private float baseSwimSpeed;
+    private float baseSwimRange;
+
+    public float CurrentStamina => currentStamina;
+    public bool isExhausted => currentStamina <= 0f;
 
     [Header("Fighting Behaviour")]
     [SerializeField] private float directionChangeInterval = 2f;
@@ -22,15 +30,26 @@ public class FishBehaviour : MonoBehaviour
     private Vector3 fightCentre;
     private Transform playerTransform;
 
+    private void Awake()
+    {
+        baseStrength = strength;
+        baseSwimSpeed = swimSpeed;
+        baseSwimRange = swimRange;
+    }
+
     private void Update()
     {
         if (!isHooked) { return; }
-
         UpdateFight();
     }
 
     public void StartFight(Transform player, Vector3 hookPosition)
     {
+        currentStamina = startingStamina;
+        strength = baseStrength;
+        swimRange = baseSwimRange;
+        swimSpeed = baseSwimSpeed;
+
         transform.position = hookPosition;
 
         playerTransform = player;
@@ -44,6 +63,7 @@ public class FishBehaviour : MonoBehaviour
 
         swimDirection = Random.value < 0.5f ? -1 : 1;
 
+        currentStamina = startingStamina;
         isHooked = true;
     }
 
@@ -94,5 +114,25 @@ public class FishBehaviour : MonoBehaviour
         transform.position += direction * fightReelSpeed * Time.deltaTime;
 
         fightCentre += direction * fightReelSpeed * Time.deltaTime;
+    }
+
+    public void DrainStamina(float amount)
+    {
+        if (!isHooked || isExhausted) { return; }
+
+        currentStamina -= amount * Time.deltaTime;
+
+        currentStamina = Mathf.Clamp(currentStamina, 0, startingStamina);
+
+        StatsStaminaMultiplier();
+    }
+
+    public void StatsStaminaMultiplier()
+    {
+        float staminaMultiplier = currentStamina / startingStamina;
+
+        strength = baseStrength * staminaMultiplier;
+        swimSpeed = baseSwimSpeed * staminaMultiplier;
+        swimRange = baseSwimRange * staminaMultiplier;
     }
 }

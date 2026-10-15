@@ -25,6 +25,8 @@ public class FishingController : MonoBehaviour
     [SerializeField] private float rodTensionGain = 15f;
     [SerializeField] private float counterTensionGain = 20f;
     [SerializeField] private float minReelTension = 30f;
+    [SerializeField] private float baseStaminaDrain = 1f;
+    [SerializeField] private float counterStaminaDrain = 4f;
 
     private float biteTimer;
     private float hookTimer;
@@ -223,7 +225,7 @@ public class FishingController : MonoBehaviour
         {
             tensionGain += reelTensionGain;
 
-            if (fishingLine.CurrentTension >= minReelTension) // Add stamina check for exhaustion
+            if (fishingLine.CurrentTension >= minReelTension || hookedFish.isExhausted) // Add stamina check for exhaustion
             {
                 hookedFish.ReelTowardsPlayer();
             }
@@ -232,6 +234,10 @@ public class FishingController : MonoBehaviour
         if (isRodRaised)
         {
             float counterStrength = CalculateCounterStrength();
+
+            float staminaDrain = baseStaminaDrain += counterStrength * counterStaminaDrain;
+
+            hookedFish.DrainStamina(staminaDrain);
 
             tensionGain += rodTensionGain + counterTensionGain;
 
