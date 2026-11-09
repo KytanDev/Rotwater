@@ -21,6 +21,8 @@ public class PlayerInteraction : MonoBehaviour
 
     private WorldItem currentItem;
     private WorldItem inspectedItem;
+    private FishingController fishingController;
+    private bool inspectingFish;
     private bool isInspecting = false;
 
     private Vector3 originalPosition;
@@ -37,6 +39,8 @@ public class PlayerInteraction : MonoBehaviour
     private void Awake()
     {
         playerInput = GetComponent<PlayerInput>();
+
+        fishingController = GetComponent<FishingController>();
 
         lookAction = playerInput.currentActionMap.FindAction("Look");
         moveAction = playerInput.currentActionMap.FindAction("Move");
@@ -161,12 +165,31 @@ public class PlayerInteraction : MonoBehaviour
 
     public void BeginInspection(WorldItem item)
     {
+        if (item == null)
+        {
+            Debug.LogError("Cannot inspect a null WorldItem!");
+            return;
+        }
+
+        if (item.ItemData == null)
+        {
+            Debug.LogError("WorldItem has no ItemData!");
+            return;
+        }
+        if (isInspecting) { return; }
+
         inspectedItem = item;
+        inspectingFish = item.GetComponent<FishBehaviour>() != null;
 
         // Remember original world state
         originalPosition = item.transform.position;
         originalRotation = item.transform.rotation;
         originalParent = item.transform.parent;
+
+        if (inspectedRigidbody != null)
+        {
+            inspectedRigidbody.isKinematic = true;
+        }
 
         // Disable normal player controls that conflict with inspection
         lookAction.Disable();
@@ -177,11 +200,6 @@ public class PlayerInteraction : MonoBehaviour
         // Disable physics while we're holding the item
         inspectedRigidbody = item.GetComponent<Rigidbody>();
 
-        if (inspectedRigidbody != null)
-        {
-            inspectedRigidbody.isKinematic = true;
-        }
-
         // Move item to inspection point
         item.transform.SetParent(inspectionPoint);
         item.transform.localPosition = Vector3.zero;
@@ -189,7 +207,14 @@ public class PlayerInteraction : MonoBehaviour
 
         Debug.Log(item.ItemData.itemName);
         Debug.Log(item.ItemData.description);
-        Debug.Log("Press E to take | Press X to put back");
+        if (inspectingFish)
+        {
+            Debug.Log("Press E to keep fish | Q to release fish");
+        }
+        else
+        {
+            Debug.Log("Press E to take | Press Q to put back");
+        }
     }
 
     private void AddInspectedItemToInventory()
@@ -198,11 +223,37 @@ public class PlayerInteraction : MonoBehaviour
             return;
 
         WorldItem itemToPickup = inspectedItem;
+        bool wasFish = inspectingFish;
+
+        if (InventoryManager.Instance == null)
+        {
+            Debug.LogError("InventoryManager missing!");
+            return;
+        }
+
+        bool added = InventoryManager.Instance.AddItem(itemToPickup.ItemData, itemToPickup.Quantity);
+
+        if (!added)
+        {
+            Debug.Log("Inventory Full! Cannot keep item.");
+            return;
+        }
 
         inspectedItem = null;
         currentItem = null;
+        inspectedRigidbody = null;
+        inspectingFish = false;
 
         ExitInspectionMode();
+
+        Destroy(itemToPickup.gameObject); // Remove if deletes if not chosen to pick up. //(-14.96222 -4.82 -2.5834815
+
+        if (wasFish && fishingController != null)
+        {
+            fishingController.OnFishInspectionFinished();
+        }
+
+        Debug.Log("Item added to inventory.");
 
         itemToPickup.Pickup();
     }
@@ -212,12 +263,15 @@ public class PlayerInteraction : MonoBehaviour
         if (inspectedItem == null)
             return;
 
+        bool wasFish = inspectingFish;
+        WorldItem itemToRelease = inspectedItem;
+
         // Restore hierarchy first
-        inspectedItem.transform.SetParent(originalParent);
+        itemToRelease.transform.SetParent(originalParent);
 
         // Then restore original world transform
-        inspectedItem.transform.position = originalPosition;
-        inspectedItem.transform.rotation = originalRotation;
+        itemToRelease.transform.position = originalPosition;
+        itemToRelease.transform.rotation = originalRotation;
 
         // Restore physics
         if (inspectedRigidbody != null)
@@ -225,19 +279,27 @@ public class PlayerInteraction : MonoBehaviour
             inspectedRigidbody.isKinematic = false;
         }
 
-        // Fish - Delete Object?
-        //if () // Tag? Could work
-        //{
-            // Delete fish Object
-        //}
-
         inspectedItem = null;
         currentItem = null;
         inspectedRigidbody = null;
+        inspectingFish = false;
 
         ExitInspectionMode();
 
-        Debug.Log("Inspection Cancelled.");
+        if (wasFish)
+        {
+            Destroy(itemToRelease.gameObject);
+
+            if (fishingController != null) { fishingController.OnFishInspectionFinished(); }
+
+            Debug.Log("Fish Released.");
+
+        }
+        else
+        {
+            Debug.Log("Inspection Cancelled.");
+        }
+
     }
 
     private void ExitInspectionMode()

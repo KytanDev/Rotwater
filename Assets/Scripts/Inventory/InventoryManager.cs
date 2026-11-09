@@ -42,37 +42,75 @@ public class InventoryManager : MonoBehaviour
 
     public bool AddItem(ItemData item, int quantity = 1)
     {
-        if (item.isStackable)
-        {
-            for (int i = 0; i < Slots.Length; i++)
-            {
-                if (Slots[i].item == item && Slots[i].quantity < item.maxStackSize)
-                {
-                    int space = item.maxStackSize - Slots[i].quantity;
-                    int toAdd = Mathf.Min(quantity, space);
-                    Slots[i].quantity += toAdd;
-                    quantity -= toAdd;
-                    DebugInventory();
-                    if (quantity <= 0) { OnInventoryChanged?.Invoke(); return true; }
-                }
-            }
-        }
+        if (item == null || quantity <= 0)
+            return false;
 
+        int remainingCapacity = 0;
+
+        int stackSize = item.isStackable
+            ? Mathf.Max(1, item.maxStackSize)
+            : 1;
+
+        // Calculate available capacity.
         for (int i = 0; i < Slots.Length; i++)
         {
             if (Slots[i].item == null)
             {
-                int toAdd = item.isStackable ? Mathf.Min(quantity, item.maxStackSize) : 1;
-                Slots[i] = new InventorySlotData(item, toAdd);
-                quantity -= toAdd;
-                DebugInventory();
-                if (quantity <= 0) { OnInventoryChanged?.Invoke(); return true; }
-
+                remainingCapacity += stackSize;
+            }
+            else if (item.isStackable && Slots[i].item == item)
+            {
+                remainingCapacity += Mathf.Max(
+                    0,
+                    stackSize - Slots[i].quantity
+                );
             }
         }
 
+        // Refuse the entire pickup if it cannot fit.
+        if (remainingCapacity < quantity)
+        {
+            Debug.Log("Not enough inventory space!");
+            return false;
+        }
+
+        // Fill existing stacks.
+        if (item.isStackable)
+        {
+            for (int i = 0; i < Slots.Length; i++)
+            {
+                if (Slots[i].item != item)
+                    continue;
+
+                int space = stackSize - Slots[i].quantity;
+                int toAdd = Mathf.Min(quantity, space);
+
+                Slots[i].quantity += toAdd;
+                quantity -= toAdd;
+
+                if (quantity <= 0)
+                    break;
+            }
+        }
+
+        // Fill empty slots.
+        for (int i = 0; i < Slots.Length && quantity > 0; i++)
+        {
+            if (Slots[i].item != null)
+                continue;
+
+            int toAdd = Mathf.Min(quantity, stackSize);
+
+            Slots[i] = new InventorySlotData(item, toAdd);
+
+            quantity -= toAdd;
+        }
+
         OnInventoryChanged?.Invoke();
-        return quantity <= 0;
+
+        DebugInventory();
+
+        return true;
     }
 
     public bool HasItem(ItemData item)

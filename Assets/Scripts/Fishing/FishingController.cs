@@ -34,6 +34,7 @@ public class FishingController : MonoBehaviour
     private float hookTimer;
     private FishBehaviour hookedFish;
     private WorldItem hookedFishObject;
+    private bool inspectingCaughtFish;
 
     [Header("State")]
     [SerializeField]
@@ -147,6 +148,11 @@ public class FishingController : MonoBehaviour
     {
         if (currentState == FishingState.Inactive) { return; }
 
+        if (inspectingCaughtFish)
+        {
+            return;
+        }
+
         StopAllCoroutines();
 
         fishingRod.ClearFly();
@@ -158,8 +164,13 @@ public class FishingController : MonoBehaviour
         if (hookedFish != null)
         {
             hookedFish.StopFight();
+
+            Destroy(hookedFish.gameObject);
+
             hookedFish = null;
         }
+
+        hookedFishObject = null;
         fishingLine.ResetTension();
         playerInput.SwitchCurrentActionMap("Player");
 
@@ -239,7 +250,7 @@ public class FishingController : MonoBehaviour
         {
             float counterStrength = CalculateCounterStrength();
 
-            float staminaDrain = baseStaminaDrain += counterStrength * counterStaminaDrain;
+            float staminaDrain = baseStaminaDrain + counterStrength * counterStaminaDrain;
 
             hookedFish.DrainStamina(staminaDrain);
 
@@ -251,6 +262,7 @@ public class FishingController : MonoBehaviour
         if (GetFishDistance() <= landingDistance)
         {
             LandFish();
+            return;
         }
 
         fishingRod.FollowFish(hookedFish.transform);
@@ -284,22 +296,57 @@ public class FishingController : MonoBehaviour
 
     private void SetHook()
     {
-        if (currentState != FishingState.Bite) { return; }
+        if (currentState != FishingState.Bite)
+            return;
 
         if (testFish == null)
         {
-            Debug.LogWarning("No fish assigned for hooksetting!");
+            Debug.LogError("No test fish prefab assigned!");
             return;
         }
 
-        hookedFish = testFish;
-        hookedFish.StartFight(transform, fishingRod.ActiveFly.transform.position);
-        Debug.Log("Fish hooked!");
-        Debug.Log($"Hooked {hookedFish.name} | " + $"Strength: {hookedFish.Strength} | " + $"Speed: {hookedFish.SwimSpeed}");
+        if (fishingRod.ActiveFly == null)
+        {
+            Debug.LogError("No active fly to hook fish at!");
+            return;
+        }
+
+        Vector3 hookPosition = fishingRod.ActiveFly.transform.position;
+
+        // Create a new fish for this catch.
+        hookedFish = Instantiate(
+            testFish,
+            hookPosition,
+            Quaternion.identity
+        );
+
+        hookedFishObject = hookedFish.GetComponent<WorldItem>();
+
+        if (hookedFishObject == null ||
+            hookedFishObject.ItemData == null)
+        {
+            Debug.LogError(
+                "Fish prefab needs WorldItem and ItemData!"
+            );
+
+            Destroy(hookedFish.gameObject);
+
+            hookedFish = null;
+            hookedFishObject = null;
+
+            return;
+        }
+
+        hookedFish.StartFight(transform, hookPosition);
+
         isRodRaised = false;
         isReeling = false;
+
         fishingLine.ResetTension();
+
         ChangeState(FishingState.Fighting);
+
+        Debug.Log($"Hooked {hookedFish.name}!");
     }
 
     private float CalculateCounterStrength()
@@ -334,15 +381,51 @@ public class FishingController : MonoBehaviour
     {
         if (currentState != FishingState.Fighting) { return; }
 
+        if (hookedFish == null || hookedFishObject == null)
+        {
+            Debug.LogError("Cannot land fish: missing reference!");
+            ExitFishingMode();
+            return;
+        }
+
         ChangeState(FishingState.Landing);
 
         isReeling = false;
         isRodRaised = false;
 
         hookedFish.StopFight();
+
         Debug.Log($"Landed {hookedFish.name}!");
 
+        fishingRod.ClearFly();
+        fishingLine.ResetTension();
+
+        // Return to the player action map so inspection can re use inputs
+        playerInput.SwitchCurrentActionMap("Player");
+
         playerInteraction.BeginInspection(hookedFishObject);
+
+    }
+
+    public void OnFishInspectionFinished()
+    {
+        if (!inspectingCaughtFish) {  return; }
+
+        inspectingCaughtFish = false;
+
+        hookedFish = null;
+        hookedFishObject = null;
+
+        castPower = 0f;
+        isReeling = false;
+        isRodRaised = false;
+
+        fishingLine.ResetTension();
+        fishingRod.ClearFly();
+
+        ChangeState(FishingState.Inactive);
+        playerInput.SwitchCurrentActionMap("Player");
+        Debug.Log("Fishing Finished. Player Controls restored.");
     }
 
     private float GetFishDistance()

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 819a28c61277395489475ede5983cf74, type: 3}
   m_Name: TestFish
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  itemName: 
-  itemID: 
-  description: 
-  isStackable: 1
-  maxStackSize: 12
-  itemType: 0
+  itemName: Brown Trout
+  itemID: 80085
+  description: A brown trout.
+  isStackable: 0
+  maxStackSize: 1
+  itemType: 5
