@@ -19,7 +19,10 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField] private float minZoom = 0.5f;
     [SerializeField] private float maxZoom = 2f;
 
+    [SerializeField] private CrowbarMinigame crowbarMinigame;
+
     private WorldItem currentItem;
+    private CacheInteractable currentCache;
     private WorldItem inspectedItem;
     private FishingController fishingController;
     private bool inspectingFish;
@@ -48,6 +51,8 @@ public class PlayerInteraction : MonoBehaviour
 
     private void Update()
     {
+        if (crowbarMinigame != null && crowbarMinigame.IsActive) { return; }
+
         if (!isInspecting)
         {
             CheckForItem();
@@ -60,8 +65,9 @@ public class PlayerInteraction : MonoBehaviour
 
     public void OnInteract(InputValue value)
     {
-        if (!value.isPressed)
-            return;
+        if (!value.isPressed) { return; }
+
+        if (crowbarMinigame != null && crowbarMinigame.IsActive) { return; }
 
         // If already inspecting, take the item
         if (isInspecting)
@@ -74,6 +80,12 @@ public class PlayerInteraction : MonoBehaviour
         if (currentItem != null)
         {
             BeginInspection(currentItem);
+            return;
+        }
+
+        if (currentCache != null)
+        {
+            currentCache.Interact();
         }
     }
 
@@ -148,6 +160,13 @@ public class PlayerInteraction : MonoBehaviour
 
     private void CheckForItem()
     {
+        if (crowbarMinigame != null && crowbarMinigame.IsActive)
+        {
+            currentItem = null;
+            currentCache = null;
+            return;
+        }
+
         Ray ray = new Ray(
             playerCamera.transform.position,
             playerCamera.transform.forward
@@ -156,10 +175,12 @@ public class PlayerInteraction : MonoBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance))
         {
             currentItem = hit.collider.GetComponentInParent<WorldItem>();
+            currentCache = hit.collider.GetComponentInParent<CacheInteractable>();
         }
         else
         {
             currentItem = null;
+            currentCache = null;
         }
     }
 
@@ -312,5 +333,19 @@ public class PlayerInteraction : MonoBehaviour
         // Give control back to FPS controller
         lookAction.Enable();
         moveAction.Enable();
+    }
+
+    public void SetCrowbarControls(bool enabled)
+    {
+        if (enabled)
+        {
+            moveAction.Enable();
+            lookAction.Enable();
+        }
+        else
+        {
+            moveAction.Disable();
+            lookAction.Disable();
+        }
     }
 }

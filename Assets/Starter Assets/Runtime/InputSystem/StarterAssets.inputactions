@@ -498,6 +498,98 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "Crowbar",
+            "id": "42e496de-d600-47bc-93cd-e345b196a4de",
+            "actions": [
+                {
+                    "name": "ApplyPressure",
+                    "type": "Button",
+                    "id": "9b0b8eaf-f99f-4a8a-b3e0-2e97bc21fa4f",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "Pull",
+                    "type": "Button",
+                    "id": "14879e27-3b90-4da0-b5cf-08c53f97cbda",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "MouseDelta",
+                    "type": "Value",
+                    "id": "1fdc9874-7b8c-414f-b85f-9ac0c691ed08",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true,
+                    "priority": 0
+                },
+                {
+                    "name": "Cancel",
+                    "type": "Button",
+                    "id": "32f991ee-8137-4dc5-881b-5baa888971ba",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "163bfedc-0a4b-4188-b788-49b239ef423e",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ApplyPressure",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "94087df7-d4e8-462c-b520-a1f6705805df",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Pull",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5848d695-56f7-4fe8-9882-c87c14f25dc8",
+                    "path": "<Mouse>/delta",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MouseDelta",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8272b17f-8961-4dc5-8875-44008634146f",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Cancel",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": [
