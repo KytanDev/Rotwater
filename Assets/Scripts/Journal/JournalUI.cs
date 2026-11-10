@@ -39,7 +39,18 @@ public class JournalUI : MonoBehaviour
         isOpen = !isOpen;
         journalPanel.SetActive(isOpen);
 
-        if (isOpen) { RefreshJournal(); }
+        if (isOpen)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
+            RefreshJournal();
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
     }
 
     private void RefreshJournal()
