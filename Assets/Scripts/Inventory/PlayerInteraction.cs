@@ -275,8 +275,6 @@ public class PlayerInteraction : MonoBehaviour
         }
 
         Debug.Log("Item added to inventory.");
-
-        itemToPickup.Pickup();
     }
 
     private void CancelInspection()

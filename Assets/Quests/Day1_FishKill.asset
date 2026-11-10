@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67f9e28475ff2d04d8164fae92d247a9, type: 3}
+  m_Name: Day1_FishKill
+  m_EditorClassIdentifier: Assembly-CSharp::QuestData
+  questID: day1_fishkill
+  questTitle: Investigate the Fish Kill
+  description: Reports of dead fish have been coming in from the river. Collect speciments
+    to investigate the cause.
+  objectives:
+  - objectiveID: collect_live_trout
+    description: Collect live trout
+    requiredItem: {fileID: 11400000, guid: 464a7c78e9a234e4a8c2146b484a17a7, type: 2}
+    requiredAmount: 2
+  - objectiveID: collect_flashlight
+    description: Find a flashlight
+    requiredItem: {fileID: 11400000, guid: fb0f1a4746df5634b97fa858e548dac6, type: 2}
+    requiredAmount: 1
