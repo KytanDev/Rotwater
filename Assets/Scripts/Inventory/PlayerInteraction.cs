@@ -23,6 +23,8 @@ public class PlayerInteraction : MonoBehaviour
 
     private WorldItem currentItem;
     private CacheInteractable currentCache;
+    private RadioTuner currentRadio;
+    private RadioTuner activeRadio;
     private WorldItem inspectedItem;
     private FishingController fishingController;
     private bool inspectingFish;
@@ -52,6 +54,7 @@ public class PlayerInteraction : MonoBehaviour
     private void Update()
     {
         if (crowbarMinigame != null && crowbarMinigame.IsActive) { return; }
+        if (activeRadio != null) { return; }
 
         if (!isInspecting)
         {
@@ -69,6 +72,12 @@ public class PlayerInteraction : MonoBehaviour
 
         if (crowbarMinigame != null && crowbarMinigame.IsActive) { return; }
 
+        if (activeRadio != null)
+        {
+            EndRadioTuning();
+            return;
+        }
+
         // If already inspecting, take the item
         if (isInspecting)
         {
@@ -76,7 +85,14 @@ public class PlayerInteraction : MonoBehaviour
             return;
         }
 
-        // Otherwise inspect the item we're looking at
+        // Radios take priority when looking at an object with a RadioTuner.
+        if (currentRadio != null)
+        {
+            BeginRadioTuning(currentRadio);
+            return;
+        }
+
+        // Otherwise inspect the item we're looking at.
         if (currentItem != null)
         {
             BeginInspection(currentItem);
@@ -93,6 +109,12 @@ public class PlayerInteraction : MonoBehaviour
     {
         if (!value.isPressed)
             return;
+
+        if (activeRadio != null)
+        {
+            EndRadioTuning();
+            return;
+        }
 
         if (isInspecting)
         {
@@ -115,6 +137,14 @@ public class PlayerInteraction : MonoBehaviour
 
     public void OnInspectZoom(InputValue value)
     {
+        if (activeRadio != null)
+        {
+            float scrollY = value.Get<Vector2>().y;
+            if (Mathf.Abs(scrollY) > 0.01f)
+                activeRadio.TuneStep(scrollY > 0f ? 1 : -1);
+            return;
+        }
+
         if (!isInspecting || inspectedItem == null)
             return;
 
@@ -164,6 +194,7 @@ public class PlayerInteraction : MonoBehaviour
         {
             currentItem = null;
             currentCache = null;
+            currentRadio = null;
             return;
         }
 
@@ -176,12 +207,39 @@ public class PlayerInteraction : MonoBehaviour
         {
             currentItem = hit.collider.GetComponentInParent<WorldItem>();
             currentCache = hit.collider.GetComponentInParent<CacheInteractable>();
+            currentRadio = hit.collider.GetComponentInParent<RadioTuner>();
         }
         else
         {
             currentItem = null;
             currentCache = null;
+            currentRadio = null;
         }
+    }
+
+    private void BeginRadioTuning(RadioTuner radio)
+    {
+        if (radio == null || isInspecting || activeRadio != null)
+            return;
+
+        if (!radio.BeginTuning(inspectionPoint))
+            return;
+
+        activeRadio = radio;
+        lookAction.Disable();
+        moveAction.Disable();
+    }
+
+    private void EndRadioTuning()
+    {
+        if (activeRadio == null)
+            return;
+
+        activeRadio.StopTuning();
+        activeRadio = null;
+        currentRadio = null;
+        lookAction.Enable();
+        moveAction.Enable();
     }
 
     public void BeginInspection(WorldItem item)
